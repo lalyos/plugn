@@ -3,13 +3,23 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/BurntSushi/toml"
 	"github.com/progrium/go-basher"
 )
+
+func init() {
+	log.SetOutput(os.Stderr)
+	if os.Getenv("DEBUG") == "" {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(log.DebugLevel)
+	}
+}
 
 func assert(err error) {
 	if err != nil {
@@ -28,9 +38,13 @@ func TomlGet(args []string) int {
 }
 
 func TomlExport(args []string) int {
+	log.Debug("TomlExport", args)
+
 	plugin := args[0]
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	assert(err)
+
+	log.Debug("[TOML]\n", string(bytes))
 
 	var c map[string]map[string]string
 	_, err = toml.Decode(string(bytes), &c)
@@ -46,6 +60,7 @@ func TomlExport(args []string) int {
 	for key := range config_def {
 		k := strings.ToUpper(strings.Replace(key, "-", "_", -1))
 		fmt.Println("export CONFIG_" + k + "=\"${" + prefix + "_" + k + ":-\"" + config[key] + "\"}\"")
+		log.Debug("[PLUGN] export CONFIG_" + k + "=\"${" + prefix + "_" + k + ":-\"" + config[key] + "\"}\" \n")
 	}
 	return 0
 }
@@ -74,6 +89,7 @@ func main() {
 	bash.ExportFunc("toml-get", TomlGet)
 	bash.ExportFunc("toml-set", TomlSet)
 	bash.ExportFunc("toml-export", TomlExport)
+	log.Debugf("bash.HandleFuncs(%#v)", os.Args)
 	bash.HandleFuncs(os.Args)
 
 	if os.Getenv("DEV") == "1" {
