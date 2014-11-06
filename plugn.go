@@ -70,6 +70,7 @@ func TomlSet(args []string) int {
 func main() {
 
 	bash := basher.NewContextWithEnv(os.Environ())
+	bash.Export("PATH", "/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin")
 	bash.ExportFunc("toml-get", TomlGet)
 	bash.ExportFunc("toml-set", TomlSet)
 	bash.ExportFunc("toml-export", TomlExport)
