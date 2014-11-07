@@ -50,12 +50,14 @@ func TomlExport(args []string) int {
 	_, err = toml.Decode(string(bytes), &c)
 	assert(err)
 	config := c[plugin]
-	prefix := strings.ToUpper(strings.Replace(plugin, "-", "_", -1))
+	//prefix := strings.ToUpper(strings.Replace(plugin, "-", "_", -1))
 
 	var p map[string]map[string]interface{}
 	_, err = toml.DecodeFile(os.Getenv("PLUGIN_PATH")+"/available/"+plugin+"/plugin.toml", &p)
 	assert(err)
 	config_def := p["plugin"]["config"].(map[string]interface{})
+	pluginName := p["plugin"]["name"].(string)
+	prefix := strings.ToUpper(strings.Replace(pluginName, "-", "_", -1))
 
 	for key := range config_def {
 		k := strings.ToUpper(strings.Replace(key, "-", "_", -1))
